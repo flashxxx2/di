@@ -6,11 +6,18 @@
 
     <groupId>tech.itpark</groupId>
     <artifactId>di</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0</version>
 
     <properties>
         <maven.compiler.source>15</maven.compiler.source>
         <maven.compiler.target>15</maven.compiler.target>
     </properties>
+
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <url>https://maven.pkg.github.com/flashxxx2/di</url>
+        </repository>
+    </distributionManagement>
 
 </project>

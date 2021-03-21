@@ -25,95 +25,41 @@ public class Container {
         if (todo.size() == 0) {
             return;
         }
-
+        int size = todo.size();
         // -> .. -> .. -> .. ->
-        final var firstGeneration = todo.stream() // lazy
-                .map(o -> o.getDeclaredConstructors()[0])
-                .filter(o -> o.getParameterCount() == 0)
-                .map(o -> {
-                    try {
-                        o.setAccessible(true);
-                        return o.newInstance();
-                    } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
-                        e.printStackTrace();
-                        throw new ObjectInstantiationException(e); // <- e //
-                    }
-                })
-                .collect(Collectors.toMap(o -> o.getClass(), o -> o));
-        objects.putAll(firstGeneration);
-        todo.removeAll(firstGeneration.keySet());
-        if (todo.size() == 0) {
-            return;
-        }
+        for (int i = 0; i < size; i++) {
 
-        if (firstGeneration.size() == 0) {
-            // sad path
-            String unmet = todo.stream()
-                    .map(o -> o.getName())
-                    .collect(Collectors.joining(", "));
-            throw new UnmetDependenciesException(unmet);
-        }
+            final var generation = todo.stream() // lazy
+                    .map(o -> o.getDeclaredConstructors()[0])
+                    .filter(o -> objects.keySet()
+                            .containsAll(Arrays.asList(o.getParameterTypes())))
+                    .map(o -> {
+                        try {
+                            o.setAccessible(true);
+                            return o.newInstance(Arrays.stream(o.getParameters())
+                                    .map(p -> objects.get(p.getType()))
+                                    .toArray()
+                            );
+                        } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
+                            e.printStackTrace();
+                            throw new ObjectInstantiationException(e); // <- e //
+                        }
+                    })
+                    .collect(Collectors.toMap(o -> o.getClass(), o -> o));
+            objects.putAll(generation);
+            todo.removeAll(generation.keySet());
+            System.out.println(generation);
+            if (todo.size() == 0) {
+                return;
+            }
 
-        // Map<Class<?>, Object> definitions
-        // definitions.keySet() -> key.getInterfaces() <- search
-        // TODO: one interface multiple times -> Oops
-        final var secondGeneration = todo.stream() // lazy
-                .map(o -> o.getDeclaredConstructors()[0])
-                .filter(o -> objects.keySet().containsAll(Arrays.asList(o.getParameterTypes())))
-                .map(o -> {
-                    try {
-                        o.setAccessible(true);
-                        return o.newInstance(Arrays.stream(o.getParameters())
-                                .map(p -> objects.get(p.getType()))
-                                .toArray()
-                        );
-                    } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
-                        e.printStackTrace();
-                        throw new ObjectInstantiationException(e); // <- e //
-                    }
-                })
-                .collect(Collectors.toMap(o -> o.getClass(), o -> o));
-        objects.putAll(secondGeneration);
-        todo.removeAll(secondGeneration.keySet());
-        if (todo.size() == 0) {
-            return;
+            if (generation.size() == 0) {
+                // sad path
+                String unmet = todo.stream()
+                        .map(o -> o.getName())
+                        .collect(Collectors.joining(", "));
+                throw new UnmetDependenciesException(unmet);
+            }
         }
-        if (secondGeneration.size() == 0) {
-            // sad path
-            String unmet = todo.stream()
-                    .map(o -> o.getName())
-                    .collect(Collectors.joining(", "));
-            throw new UnmetDependenciesException(unmet);
-        }
-
-        final var thirdGeneration = todo.stream() // lazy
-                .map(o -> o.getDeclaredConstructors()[0])
-                .filter(o -> objects.keySet()
-                        .containsAll(Arrays.asList(o.getParameterTypes()))
-                )
-                .map(o -> {
-                    try {
-                        List<Object> params = Arrays.stream(o.getParameterTypes())
-                                .map(p -> objects.get(p))
-                                .collect(Collectors.toList());
-                        o.setAccessible(true);
-                        return o.newInstance(params.toArray());
-                    } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
-                        e.printStackTrace();
-                        throw new ObjectInstantiationException(e); // <- e //
-                    }
-                })
-                .collect(Collectors.toMap(o -> o.getClass(), o -> o));
-        objects.putAll(thirdGeneration);
-        todo.removeAll(thirdGeneration.keySet());
-        if (todo.size() == 0) {
-            return;
-        }
-
-        // sad path
-        String unmet = todo.stream()
-                .map(o -> o.getName())
-                .collect(Collectors.joining(", "));
-        throw new UnmetDependenciesException(unmet);
     }
 }

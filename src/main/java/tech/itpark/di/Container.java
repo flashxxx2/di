@@ -48,7 +48,6 @@ public class Container {
                     .collect(Collectors.toMap(o -> o.getClass(), o -> o));
             objects.putAll(generation);
             todo.removeAll(generation.keySet());
-            System.out.println(generation);
             if (todo.size() == 0) {
                 return;
             }

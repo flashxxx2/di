@@ -13,4 +13,11 @@
         <maven.compiler.target>15</maven.compiler.target>
     </properties>
 
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <url>https://maven.pkg.github.com/flashxxx2/di</url>
+        </repository>
+    </distributionManagement>
+
 </project>

@@ -7,7 +7,7 @@ public class Main {
     public static void main(String[] args) {
         try {
             final var container = new Container();
-            container.register(Service.class, Repository.class);
+            container.register(Service.class, Repository.class, Controller.class);
             container.wire();
             System.out.println("finish");
         } catch (DIException e) {
@@ -30,4 +30,13 @@ class Service {
     public Service(Repository repository) {
         this.repository = repository;
     }
+}
+
+class Controller {
+    private final Service service;
+
+    public Controller(Service service) {
+        this.service = service;
+    }
+
 }

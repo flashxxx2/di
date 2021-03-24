@@ -11,7 +11,7 @@ public class Container {
     public void register(Class<?>... definitions) {
         String badDefinitions = Arrays.stream(definitions)
                 .filter(o -> o.getDeclaredConstructors().length != 1)
-                .map(o -> o.getName())
+                .map(Class::getName)
                 .collect(Collectors.joining(", "));
         if (!badDefinitions.isEmpty()) {
             throw new AmbiguousConstructorException(badDefinitions);

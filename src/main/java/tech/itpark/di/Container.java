@@ -22,12 +22,11 @@ public class Container {
 
     public void wire() {
         var todo = new HashSet<>(definitions);
-        if (todo.size() == 0) {
+        if (todo.isEmpty()) {
             return;
         }
-        int size = todo.size();
         // -> .. -> .. -> .. ->
-        for (int i = 0; i < size; i++) {
+        while (!todo.isEmpty()) {
 
             final var generation = todo.stream() // lazy
                     .map(o -> o.getDeclaredConstructors()[0])
@@ -45,12 +44,9 @@ public class Container {
                             throw new ObjectInstantiationException(e); // <- e //
                         }
                     })
-                    .collect(Collectors.toMap(o -> o.getClass(), o -> o));
+                    .collect(Collectors.toMap(Object::getClass, o -> o));
             objects.putAll(generation);
             todo.removeAll(generation.keySet());
-            if (todo.size() == 0) {
-                return;
-            }
 
             if (generation.size() == 0) {
                 // sad path

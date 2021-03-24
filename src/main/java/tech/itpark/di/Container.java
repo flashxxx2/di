@@ -21,7 +21,7 @@ public class Container {
     }
 
     public void wire() {
-        HashSet<Class<?>> todo = new HashSet<>(definitions);
+        var todo = new HashSet<>(definitions);
         if (todo.size() == 0) {
             return;
         }
